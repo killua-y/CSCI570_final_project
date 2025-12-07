@@ -71,7 +71,7 @@ def get_process_memory_kb() -> int:
     return int(mem_info.rss / 1024)
 
 def get_current_time_ms() -> float:
-    return time.time() * 1000.0
+    return time.perf_counter() * 1000.0
 
 def run_with_measurement(alignment_func, X: str, Y: str):
     before_mem_kb = get_process_memory_kb()
