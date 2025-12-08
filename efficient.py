@@ -74,13 +74,11 @@ def get_current_time_ms() -> float:
     return time.perf_counter() * 1000.0
 
 def run_with_measurement(alignment_func, X: str, Y: str):
-    before_mem_kb = get_process_memory_kb()
     start_ms = get_current_time_ms()
 
-    cost, aligned_X, aligned_Y = alignment_func(X, Y)
+    cost, aligned_X, aligned_Y, before_mem_kb, after_mem_kb = alignment_func(X, Y)
 
     end_ms = get_current_time_ms()
-    after_mem_kb = get_process_memory_kb()
 
     time_ms = end_ms - start_ms
     mem_diff_kb = float(after_mem_kb - before_mem_kb)
@@ -98,6 +96,8 @@ def basic_alignment_dp(X: str, Y: str):
     Standard O(mn) DP. Used as the base case for Divide & Conquer
     when the problem size is small (len(X) <= 2).
     """
+    before_mem_kb = get_process_memory_kb()
+
     m = len(X)
     n = len(Y)
     
@@ -141,7 +141,9 @@ def basic_alignment_dp(X: str, Y: str):
             j -= 1
             continue
 
-    return min_cost, "".join(aligned_X[::-1]), "".join(aligned_Y[::-1])
+    after_mem_kb = get_process_memory_kb()
+
+    return min_cost, "".join(aligned_X[::-1]), "".join(aligned_Y[::-1]), before_mem_kb, after_mem_kb
 
 # ===================== Memory Efficient Logic =====================
 
@@ -178,6 +180,8 @@ def divide_and_conquer_alignment(X: str, Y: str):
     Hirschberg's Algorithm for Memory Efficient Global Alignment.
     Returns: (cost, aligned_X, aligned_Y)
     """
+    before_mem_kb = get_process_memory_kb()
+
     m = len(X)
     n = len(Y)
 
@@ -209,17 +213,19 @@ def divide_and_conquer_alignment(X: str, Y: str):
 
     # Recursively solve the two subproblems
     # Top-Left: X[0...mid_x] and Y[0...split_y]
-    cost_tl, aligned_x_tl, aligned_y_tl = divide_and_conquer_alignment(X[:mid_x], Y[:split_y])
+    cost_tl, aligned_x_tl, aligned_y_tl, _, _ = divide_and_conquer_alignment(X[:mid_x], Y[:split_y])
     
     # Bottom-Right: X[mid_x...end] and Y[split_y...end]
-    cost_br, aligned_x_br, aligned_y_br = divide_and_conquer_alignment(X[mid_x:], Y[split_y:])
+    cost_br, aligned_x_br, aligned_y_br, _, _ = divide_and_conquer_alignment(X[mid_x:], Y[split_y:])
 
     # Combine results
     total_cost = cost_tl + cost_br
     total_aligned_x = aligned_x_tl + aligned_x_br
     total_aligned_y = aligned_y_tl + aligned_y_br
 
-    return total_cost, total_aligned_x, total_aligned_y
+    after_mem_kb = get_process_memory_kb()
+
+    return total_cost, total_aligned_x, total_aligned_y, before_mem_kb, after_mem_kb
 
 # ===================== Main =====================
 
@@ -235,7 +241,7 @@ def main():
 
     # 2. Run Efficient Alignment
     cost, aligned_X, aligned_Y, time_ms, mem_kb = run_with_measurement(
-        divide_and_conquer_alignment, X, Y
+        basic_alignment_dp, X, Y
     )
 
     # 3. Write Output

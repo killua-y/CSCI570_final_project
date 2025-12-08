@@ -110,18 +110,16 @@ def run_with_measurement(alignment_func, X: str, Y: str, *args, **kwargs):
     Unified wrapper: time measurement + memory measurement + call alignment algorithm.
 
     alignment_func must return:
-        (cost, aligned_X, aligned_Y)
+        (cost, aligned_X, aligned_Y, before_mem_kb, after_mem_kb)
 
     Returns:
         (cost, aligned_X, aligned_Y, time_ms, memory_kb_diff)
     """
-    before_mem_kb = get_process_memory_kb()
     start_ms = get_current_time_ms()
 
-    cost, aligned_X, aligned_Y = alignment_func(X, Y, *args, **kwargs)
+    cost, aligned_X, aligned_Y, before_mem_kb, after_mem_kb = alignment_func(X, Y, *args, **kwargs)
 
     end_ms = get_current_time_ms()
-    after_mem_kb = get_process_memory_kb()
 
     time_ms = end_ms - start_ms
     mem_diff_kb = float(after_mem_kb - before_mem_kb)
@@ -160,6 +158,8 @@ def basic_alignment_dp(X: str, Y: str):
     Returns:
         (min_cost, aligned_X, aligned_Y)
     """
+    before_mem_kb = get_process_memory_kb()
+
     m = len(X)
     n = len(Y)
 
@@ -224,7 +224,9 @@ def basic_alignment_dp(X: str, Y: str):
     aligned_X.reverse()
     aligned_Y.reverse()
 
-    return min_cost, ''.join(aligned_X), ''.join(aligned_Y)
+    after_mem_kb = get_process_memory_kb()
+
+    return min_cost, ''.join(aligned_X), ''.join(aligned_Y), before_mem_kb, after_mem_kb
 
 
 def main():
