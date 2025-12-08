@@ -3,7 +3,7 @@
 # Functionality:
 #   - Read input_file, output_file from command line
 #   - Generate two DNA strings s and t
-#   - Use Divide and Conquer (Hirschberg's Algorithm) to align sequences
+#   - Use Divide and Conquer to align sequences
 #     using O(min(m,n)) space complexity.
 #   - Measure runtime and memory usage.
 #   - Write results to output file.
@@ -85,8 +85,7 @@ def run_with_measurement(alignment_func, X: str, Y: str):
     time_ms = end_ms - start_ms
     mem_diff_kb = float(after_mem_kb - before_mem_kb)
     
-    # Logic note: Python's GC can sometimes cause negative diffs if objects are collected
-    # during execution. For this assignment context, we clamp to 0.
+    # In extreme cases may be negative (GC, etc.), take max to prevent negative values
     if mem_diff_kb < 0:
         mem_diff_kb = 0.0
 
@@ -199,7 +198,6 @@ def divide_and_conquer_alignment(X: str, Y: str):
     # 3. Find the optimal split point k in Y
     # The optimal path passes through (mid_x, k)
     # Total cost = score_left[k] + score_right[n - k]
-    # Note: score_right is based on reversed strings, so index k corresponds to index n-k in forward string
     min_cost = float('inf')
     split_y = -1
 
